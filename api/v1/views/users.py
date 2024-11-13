@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 """
-This module creates the view for all state objects
-and handles all default api actions
+This module creates the view for all user objects
+and handles all default API actions
 """
 
-from api.v1.views import app_views, index
-from flask import Flask, abort, jsonify, request
+from api.v1.views import app_views
+from flask import abort, jsonify, request
 from models import storage
 from models.user import User
 
@@ -13,7 +13,7 @@ from models.user import User
 @app_views.route("/users", methods=["GET"], strict_slashes=False)
 def get_all_users():
     """
-    This method retrieves a list of all state objects
+    This method retrieves a list of all user objects
     Args: users - list of all users, keys excluded
           users_json - all users converted to a list of dictionaries
     Return: a json dictionary containing all user objects
@@ -49,7 +49,6 @@ def delete_user(user_id):
     if user is None:
         abort(404)  # Bad request
     storage.delete(user)
-    print(f"type of user: {type(user)}")
     storage.save()
     return jsonify({}), 200  # OK
 
