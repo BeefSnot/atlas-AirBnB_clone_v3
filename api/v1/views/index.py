@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""The module conatins the index for the api"""
+"""The module contains the index for the API"""
 from api.v1.views import app_views
 from flask import jsonify
 from models import storage
@@ -18,16 +18,15 @@ classes = {"amenities": Amenity, "cities": City,
 
 @app_views.route('/status', methods=['GET'], strict_slashes=False)
 def status():
-    """returns the status of the api"""
+    """returns the status of the API"""
     return jsonify({"status": "OK"})
 
 
-@app_views.route('/stats', strict_slashes=False, methods=['GET'])
+@app_views.route('/stats', methods=['GET'], strict_slashes=False)
 def get_stats():
     """returns counts of the different objects"""
     return_dict = {}
     for object in classes:
-        # print({object})
         object_dict = {object: storage.count(classes[object])}
         return_dict.update(object_dict)
     return jsonify(return_dict)

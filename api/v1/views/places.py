@@ -11,72 +11,42 @@ from flask import jsonify, request, make_response, abort
 from models import storage
 
 
-@app_views.route("/cities/<city_id>/places", methods=['GET'],
-                 strict_slashes=False)
-# def place_all(city_id=None):
+@app_views.route("/cities/<city_id>/places", methods=['GET'], strict_slashes=False)
 def place_all(city_id):
-    """Returns all places or a place by specific ID"""
-
-    if city_id:
-        city = storage.get(City, city_id)
-        print(f"{city}")
-        if city is not None:
-            placeList = [place.to_dict() for place in city.places]
-            print(f"return print: {placeList}")
-            return jsonify(placeList)
-        else:
-            print("here")
-            return abort(404)
-
-    # print("here")
-    # city = storage.get(City, city_id)
-    # if not city:
-    #     abort(404)
-    # places = city.places
-    # if not places:
-    #     abort(404)
-    # places_list = []
-    # for place in places:
-    #     places_list.append(place.to_dict())
-    # return jsonify(places_list)
-
-    # city = storage.get(City, city_id)
-    # if not city:
-    #     abort(404)
-    # return jsonify([place.to_dict() for place in city.places])
+    """Returns all places for a specific city ID"""
+    city = storage.get(City, city_id)
+    if not city:
+        abort(404)
+    place_list = [place.to_dict() for place in city.places]
+    return jsonify(place_list)
 
 
-@app_views.route("/places/<place_id>", methods=['GET'],
-                 strict_slashes=False)
-def place_by_id(place_id=None):
-    if place_id:
-        place = storage.get(Place, place_id)
-        if place:
-            return jsonify(place.to_dict())
-        else:
-            return abort(404)
-
-
-@app_views.route("/places/<place_id>", methods=['DELETE'],
-                 strict_slashes=False)
-def place_delete(place_id):
-    """deletes a place by ID"""
-
+@app_views.route("/places/<place_id>", methods=['GET'], strict_slashes=False)
+def place_by_id(place_id):
+    """Returns a place by ID"""
     place = storage.get(Place, place_id)
-    if place is None:
+    if not place:
+        abort(404)
+    return jsonify(place.to_dict())
+
+
+@app_views.route("/places/<place_id>", methods=['DELETE'], strict_slashes=False)
+def place_delete(place_id):
+    """Deletes a place by ID"""
+    place = storage.get(Place, place_id)
+    if not place:
         abort(404)
     storage.delete(place)
     storage.save()
     return make_response(jsonify({}), 200)
 
 
-@app_views.route("/cities/<city_id>/places", methods=['POST'],
-                 strict_slashes=False)
+@app_views.route("/cities/<city_id>/places", methods=['POST'], strict_slashes=False)
 def post_place(city_id):
-    """add place using POST"""
+    """Adds a place using POST"""
     city = storage.get(City, city_id)
-    if city is None:
-        return abort(404)
+    if not city:
+        abort(404)
 
     if not request.is_json:
         return make_response(jsonify({"error": "Not a JSON"}), 400)
@@ -88,7 +58,7 @@ def post_place(city_id):
         return make_response(jsonify({"error": "Missing name"}), 400)
 
     user = storage.get(User, data['user_id'])
-    if user is None:
+    if not user:
         abort(404)
 
     data['city_id'] = city_id
@@ -98,21 +68,20 @@ def post_place(city_id):
     return make_response(jsonify(new_place.to_dict()), 201)
 
 
-@app_views.route("/places/<place_id>", methods=['PUT'],
-                 strict_slashes=False)
+@app_views.route("/places/<place_id>", methods=['PUT'], strict_slashes=False)
 def put_place(place_id):
-    """update an place using PUT"""
+    """Updates a place using PUT"""
     place = storage.get(Place, place_id)
-    if place is None:
-        return abort(404)
+    if not place:
+        abort(404)
 
     if not request.is_json:
         return make_response(jsonify({"error": "Not a JSON"}), 400)
 
     data = request.get_json()
-    notThese = ["id", "created_at", "updated_at", "city_id", "user_id"]
+    not_these = ["id", "created_at", "updated_at", "city_id", "user_id"]
     for key, value in data.items():
-        if key not in notThese:
+        if key not in not_these:
             setattr(place, key, value)
     storage.save()
     return make_response(jsonify(place.to_dict()), 200)

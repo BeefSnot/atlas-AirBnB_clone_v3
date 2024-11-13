@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 """
 This module creates the view for all state objects
-and handles all default api actions
+and handles all default API actions
 """
 
-from api.v1.views import app_views, index
-from flask import Flask, abort, jsonify, request
+from api.v1.views import app_views
+from flask import abort, jsonify, request
 from models import storage
 from models.state import State
 
@@ -19,7 +19,6 @@ def get_all_states():
     Return: a json dictionary containing all state objects
     """
     states_all = storage.all(State).values()
-    # print(f"states_all type: {type(states_all)}")
     states_json = [state.to_dict() for state in states_all]
     return jsonify(states_json)
 
@@ -39,15 +38,13 @@ def get_state(state_id):
     return jsonify(state_json)
 
 
-@app_views.route(
-        "/states/<state_id>", methods=["DELETE"], strict_slashes=False)
+@app_views.route("/states/<state_id>", methods=["DELETE"], strict_slashes=False)
 def delete_state(state_id):
     """
     This method deletes one state object
     Args: state - retrieves one state object, based on its state id
     Return: an empty json dictionary
     """
-    # print("here")
     state = storage.get(State, state_id)
     if state is None:
         abort(404)  # Bad request
@@ -66,7 +63,6 @@ def create_state():
     """
     json_data = request.get_json(silent=True)
     if not json_data:
-        # print("here")
         abort(400, "Not a JSON")  # Bad request
     if "name" not in json_data:
         abort(400, "Missing name")  # Bad request
@@ -76,15 +72,14 @@ def create_state():
     return jsonify(state_json), 201  # OK
 
 
-@app_views.route(
-        "/states/<state_id>", methods=["PUT"], strict_slashes=False)
+@app_views.route("/states/<state_id>", methods=["PUT"], strict_slashes=False)
 def update_state(state_id):
     """
     This method updates a state object
     Args: state - retrieves one state object, based on its state id
           json_data - json request data for readability
           state_json - state object converted to a dictionary
-    Return:
+    Return: a json dictionary containing the updated state object
     """
     state = storage.get(State, state_id)
     json_data = request.get_json(silent=True)
@@ -92,11 +87,9 @@ def update_state(state_id):
         abort(404)  # Bad request
     if not json_data:
         abort(400, "Not a JSON")  # Bad request
-    if "name" not in json_data:
-        abort(400, "Missing name")  # Bad request
     for key, value in json_data.items():
         if key not in ["id", "created_at", "updated_at"]:
             setattr(state, key, value)
     state.save()
     state_json = state.to_dict()
-    return jsonify(state_json)
+    return jsonify(state_json), 200  # OK
