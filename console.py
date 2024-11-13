@@ -118,5 +118,4 @@ class HBNBCommand(cmd.Cmd):
             return False
         for key in obj_dict:
             obj_list.append(str(obj_dict 1
-                                
-                                
+
